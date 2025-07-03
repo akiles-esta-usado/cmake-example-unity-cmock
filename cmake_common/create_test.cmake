@@ -13,21 +13,32 @@ function(create_test test_name test_src test_dep)
 endfunction()
 
 # Generates a mock library based on a module's header file
-function(create_mock mock_name header_abs_path)
-  get_filename_component(header_folder ${header_abs_path} DIRECTORY)
-  file(MAKE_DIRECTORY ${header_folder}/mocks)
+function(cmock_generate_mock MOCK_NAME HEADER)
+  get_filename_component(CMOCK_HEADER_DIR ${HEADER} DIRECTORY)
+
+  set(CMOCK_CWD ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  set(CMOCK_MOCK_DIR ${CMOCK_CWD}/mocks)
+  set(CMOCK_RUBY_SCRIPT ${CMAKE_SOURCE_DIR}/vendor/cmock/lib/cmock.rb)
+  file(MAKE_DIRECTORY ${CMOCK_MOCK_DIR})
+
+  if(NOT EXISTS "${CMOCK_CWD}/cmock_config.yml")
+    message(FATAL_ERROR "${CMOCK_CWD}/cmock_config.yml does not exist!")
+  endif()
+
   add_custom_command (
-    OUTPUT ${header_folder}/mocks/${mock_name}.c
+    OUTPUT ${CMOCK_MOCK_DIR}/${MOCK_NAME}.c
     COMMAND ruby
-            ${CMAKE_SOURCE_DIR}/vendor/cmock/lib/cmock.rb
-            -o${CMAKE_SOURCE_DIR}/cmake_common/project.yml
-            ${header_abs_path}
-    WORKING_DIRECTORY ${header_folder}
-    DEPENDS ${header_abs_path})
+            ${CMOCK_RUBY_SCRIPT}
+            -o${CMOCK_CWD}/cmock_config.yml
+            ${HEADER}
+    WORKING_DIRECTORY ${CMOCK_CWD}
+    DEPENDS ${HEADER})
   
-  add_library(${mock_name} ${header_folder}/mocks/${mock_name}.c)
-  target_include_directories(${mock_name} PUBLIC  ${header_folder})
-  target_include_directories(${mock_name} PUBLIC  ${header_folder}/mocks)
-  target_link_libraries(${mock_name} unity)
-  target_link_libraries(${mock_name} cmock)
+  add_library(${MOCK_NAME} ${CMOCK_MOCK_DIR}/${MOCK_NAME}.c)
+  target_link_libraries(${MOCK_NAME} unity cmock)
+  target_include_directories(${MOCK_NAME} 
+    PUBLIC  ${CMOCK_HEADER_DIR} ${MOCK_NAME}
+    PUBLIC  ${CMOCK_MOCK_DIR}
+  )
+  
 endfunction()

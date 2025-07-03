@@ -7,4 +7,4 @@ target_include_directories(divider PUBLIC  include)
 target_include_directories(divider PRIVATE src)
 
 get_filename_component(header_abs_path include/divide.h REALPATH )
-create_mock(mock_divide ${header_abs_path})
+cmock_generate_mock(mock_divide ${header_abs_path})
