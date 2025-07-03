@@ -8,5 +8,5 @@ unity_add_test(
 cmock_add_test(
   add_test_cmock    # target name
   add_test_cmock.c  # .c
-  adder mock_add    # linked libraries
+  mock_add    # linked libraries
   ) # Does not work

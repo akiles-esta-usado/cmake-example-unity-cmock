@@ -6,6 +6,3 @@ add_subdirectory(adder)
 add_subdirectory(multiplier)
 add_subdirectory(divider)
 add_subdirectory(calculator)
-
-add_library(maths INTERFACE)
-target_link_libraries(maths INTERFACE adder multiplier divider substractor)

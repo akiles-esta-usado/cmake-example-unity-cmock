@@ -1,5 +1,4 @@
 unity_add_test(calculator_test calculator_test.c calculator)
-target_link_libraries(calculator_test maths)
 
 # get_filename_component( test_src_absolute tests/calculator_test.c REALPATH )
 # add_custom_command    (OUTPUT calculator_test_runner.c

@@ -1,4 +1,3 @@
-#include <add.h>
 #include <mock_add.h>
 #include <unity.h>
 
@@ -8,7 +7,8 @@ void tearDown() {}
 void test_boring() { TEST_ASSERT_EQUAL(10, 10); }
 
 void test_get_random() {
-  get_random_ExpectAndReturn(10);
-  // TEST_ASSERT_EQUAL(10, get_random());
-  TEST_ASSERT_EQUAL(10, 10);
+  // This test just verifies the behaviour of cmock, Is not a validation over
+  // adder. mock_add might be useful on Calculator
+  double_random_ExpectAndReturn(2 * 42);
+  TEST_ASSERT_EQUAL(2 * 42, double_random());
 }
