@@ -15,11 +15,13 @@ function(unity_add_test TEST_TARGET TEST_SRC TEST_DEP)
 
   file(MAKE_DIRECTORY ${_UNITY_RUNNER_DIR})
 
-  get_filename_component( test_src_absolute ${TEST_SRC} REALPATH )
-  add_custom_command    (OUTPUT ${TEST_TARGET}_runner.c
+  get_filename_component( UNITY_TEST_DIR ${TEST_SRC} REALPATH )
+
+  add_custom_command(
+    OUTPUT ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c
     COMMAND ruby ${_UNITY_RUNNER_GENERATOR}
       ${_UNITY_CONFIG}
-      ${test_src_absolute} ${TEST_TARGET}_runner.c
+      ${UNITY_TEST_DIR} ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c
     DEPENDS
       ${TEST_SRC}
     WORKING_DIRECTORY
@@ -27,8 +29,7 @@ function(unity_add_test TEST_TARGET TEST_SRC TEST_DEP)
   )
 
   add_executable        (${TEST_TARGET} ${TEST_SRC} ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c)
-  target_link_libraries (${TEST_TARGET} unity)
-  target_link_libraries (${TEST_TARGET} ${TEST_DEP})
+  target_link_libraries (${TEST_TARGET} unity ${TEST_DEP})
   add_test              (${TEST_TARGET} ${TEST_TARGET})
 endfunction()
 

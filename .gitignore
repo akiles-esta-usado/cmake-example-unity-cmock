@@ -5,3 +5,5 @@ Testing/*
 *_Runner.c
 mock_*.c
 mock_*.h
+**/tests/runners
+**/tests/mocks
