@@ -15,13 +15,13 @@ function(unity_add_test TEST_TARGET TEST_SRC TEST_DEP)
 
   file(MAKE_DIRECTORY ${_UNITY_RUNNER_DIR})
 
-  get_filename_component( UNITY_TEST_DIR ${TEST_SRC} REALPATH )
+  get_filename_component( UNITY_TEST_C ${TEST_SRC} REALPATH )
 
   add_custom_command(
     OUTPUT ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c
     COMMAND ruby ${_UNITY_RUNNER_GENERATOR}
       ${_UNITY_CONFIG}
-      ${UNITY_TEST_DIR} ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c
+      ${UNITY_TEST_C} ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c
     DEPENDS
       ${TEST_SRC}
     WORKING_DIRECTORY
@@ -38,6 +38,7 @@ endfunction()
 # requires: work on "tests" directory
 function(_cmock_set_variables)
   set(_CMOCK_CWD         ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+  set(_CMOCK_CONFIG      ${CMAKE_CURRENT_SOURCE_DIR}/config.yml PARENT_SCOPE)
   set(_CMOCK_MOCK_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/mocks PARENT_SCOPE)
   set(_CMOCK_RUBY_SCRIPT ${CMAKE_SOURCE_DIR}/vendor/cmock/lib/cmock.rb PARENT_SCOPE)
 endfunction()
@@ -50,8 +51,8 @@ endfunction()
 function(cmock_generate_mock MOCK_NAME HEADER)
   _cmock_set_variables()
 
-  if(NOT EXISTS "${_CMOCK_CWD}/config.yml")
-    message(FATAL_ERROR "${_CMOCK_CWD}/config.yml does not exist!")
+  if(NOT EXISTS "${_CMOCK_CONFIG}")
+    message(FATAL_ERROR "${_CMOCK_CONFIG} does not exist!")
   endif()
 
   file(MAKE_DIRECTORY ${_CMOCK_MOCK_DIR})
@@ -60,7 +61,7 @@ function(cmock_generate_mock MOCK_NAME HEADER)
     OUTPUT ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.c
     COMMAND ruby
             ${_CMOCK_RUBY_SCRIPT}
-            -o${_CMOCK_CWD}/config.yml
+            -o${_CMOCK_CONFIG}
             ${HEADER}
     WORKING_DIRECTORY ${_CMOCK_CWD}
     DEPENDS ${HEADER})
