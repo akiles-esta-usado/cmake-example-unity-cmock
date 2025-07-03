@@ -15,9 +15,10 @@ endfunction()
 
 # INTERNAL
 # Defines useful variables for cmock functions
+# requires: work on "tests" directory
 function(_cmock_set_variables)
-  set(_CMOCK_CWD         ${CMAKE_CURRENT_SOURCE_DIR}/tests PARENT_SCOPE)
-  set(_CMOCK_MOCK_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/tests/mocks PARENT_SCOPE)
+  set(_CMOCK_CWD         ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+  set(_CMOCK_MOCK_DIR    ${CMAKE_CURRENT_SOURCE_DIR}/mocks PARENT_SCOPE)
   set(_CMOCK_RUBY_SCRIPT ${CMAKE_SOURCE_DIR}/vendor/cmock/lib/cmock.rb PARENT_SCOPE)
 endfunction()
 
