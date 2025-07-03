@@ -6,7 +6,8 @@ function(_unity_set_variables)
 endfunction()
 
 # Creates a unity test
-function(unity_add_test TEST_TARGET TEST_SRC TEST_DEP)
+function(unity_add_test TEST_TARGET TEST_SRC)
+  message(CHECK_START "Registering unity test ${TEST_TARGET}")
   _unity_set_variables()
 
   if(NOT EXISTS "${_UNITY_CONFIG}")
@@ -29,8 +30,10 @@ function(unity_add_test TEST_TARGET TEST_SRC TEST_DEP)
   )
 
   add_executable        (${TEST_TARGET} ${TEST_SRC} ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c)
-  target_link_libraries (${TEST_TARGET} unity ${TEST_DEP})
+  target_link_libraries (${TEST_TARGET} unity ${ARGN})
   add_test              (${TEST_TARGET} ${TEST_TARGET})
+
+  message(CHECK_PASS "registered target ${TEST_TARGET}")
 endfunction()
 
 # INTERNAL
@@ -49,6 +52,7 @@ endfunction()
 #   HEADER      used to generate the mock
 # requires: a file called config.yml on the tests directory
 function(cmock_generate_mock MOCK_NAME HEADER)
+  message(CHECK_START "Generating mock library of ${HEADER}")
   _cmock_set_variables()
 
   if(NOT EXISTS "${_CMOCK_CONFIG}")
@@ -74,15 +78,14 @@ function(cmock_generate_mock MOCK_NAME HEADER)
     PUBLIC  ${CMOCK_HEADER_DIR} ${MOCK_NAME}
     PUBLIC  ${_CMOCK_MOCK_DIR}
   )
+  message(CHECK_PASS "generated target " ${MOCK_NAME})
 endfunction()
 
 # Creates a unity test linked with cmock generated mocks
-function(cmock_add_test TEST_TARGET TEST_SRC TEST_DEP CMOCK_DEP)
-  unity_add_test(${TEST_TARGET} ${TEST_SRC} ${TEST_DEP})
+function(cmock_add_test TEST_TARGET TEST_SRC)
+  message(CHECK_START "Registering cmock test ${TEST_TARGET}")
 
-  _cmock_set_variables()
+  unity_add_test(${TEST_TARGET} ${TEST_SRC} cmock ${ARGN})
 
-  target_link_libraries(${TEST_TARGET} cmock)
-  target_link_libraries (${TEST_TARGET} ${CMOCK_DEP})
-  # target_include_directories(${TEST_TARGET} PRIVATE ${_CMOCK_MOCK_DIR})
+  message(CHECK_PASS "Target ${TEST_TARGET} linked with CMock")
 endfunction()
