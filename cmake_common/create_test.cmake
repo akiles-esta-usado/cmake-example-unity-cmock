@@ -7,7 +7,7 @@ endfunction()
 
 # Creates a unity test
 function(unity_add_test TEST_TARGET TEST_SRC)
-  message(CHECK_START "Registering unity test ${TEST_TARGET}")
+  message(CHECK_START "[TEST] Registering unity test ${TEST_TARGET}")
   _unity_set_variables()
 
   if(NOT EXISTS "${_UNITY_CONFIG}")
@@ -52,7 +52,7 @@ endfunction()
 #   HEADER      used to generate the mock
 # requires: a file called config.yml on the tests directory
 function(cmock_generate_mock MOCK_NAME HEADER)
-  message(CHECK_START "Generating mock library of ${HEADER}")
+  message(CHECK_START "[TEST] Generating mock library of ${HEADER}")
   _cmock_set_variables()
 
   if(NOT EXISTS "${_CMOCK_CONFIG}")
@@ -62,28 +62,33 @@ function(cmock_generate_mock MOCK_NAME HEADER)
   file(MAKE_DIRECTORY ${_CMOCK_MOCK_DIR})
 
   add_custom_command (
-    OUTPUT ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.c
+    OUTPUT
+      ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.c
+      ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.h
     COMMAND ruby
-            ${_CMOCK_RUBY_SCRIPT}
-            -o${_CMOCK_CONFIG}
-            ${HEADER}
+      ${_CMOCK_RUBY_SCRIPT}
+      -o${_CMOCK_CONFIG}
+      ${HEADER}
     WORKING_DIRECTORY ${_CMOCK_CWD}
     DEPENDS ${HEADER})
   
   get_filename_component(CMOCK_HEADER_DIR ${HEADER} DIRECTORY)
 
-  add_library(${MOCK_NAME} ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.c)
+  add_library(${MOCK_NAME}
+    ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.c
+    ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.h
+    )
   target_link_libraries(${MOCK_NAME} unity cmock)
-  target_include_directories(${MOCK_NAME} 
-    PUBLIC  ${CMOCK_HEADER_DIR} ${MOCK_NAME}
-    PUBLIC  ${_CMOCK_MOCK_DIR}
+  target_include_directories(${MOCK_NAME} PUBLIC
+    ${CMOCK_HEADER_DIR}
+    ${_CMOCK_MOCK_DIR}
   )
   message(CHECK_PASS "generated target " ${MOCK_NAME})
 endfunction()
 
 # Creates a unity test linked with cmock generated mocks
 function(cmock_add_test TEST_TARGET TEST_SRC)
-  message(CHECK_START "Registering cmock test ${TEST_TARGET}")
+  message(CHECK_START "[TEST] Registering cmock test ${TEST_TARGET}")
 
   unity_add_test(${TEST_TARGET} ${TEST_SRC} cmock ${ARGN})
 
