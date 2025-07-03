@@ -1,16 +1,35 @@
+function(_unity_set_variables)
+  set(_UNITY_CWD              ${CMAKE_CURRENT_SOURCE_DIR} PARENT_SCOPE)
+  set(_UNITY_CONFIG           ${CMAKE_CURRENT_SOURCE_DIR}/config.yml PARENT_SCOPE)
+  set(_UNITY_RUNNER_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/runners PARENT_SCOPE)
+  set(_UNITY_RUNNER_GENERATOR ${CMAKE_SOURCE_DIR}/vendor/Unity/auto/generate_test_runner.rb PARENT_SCOPE)
+endfunction()
+
 # Creates a unity test
-function(unity_add_test test_name test_src test_dep)
-  get_filename_component( test_src_absolute ${test_src} REALPATH )
-  add_custom_command    (OUTPUT ${test_name}_runner.c
-    COMMAND
-    ruby ${CMAKE_SOURCE_DIR}/vendor/Unity/auto/generate_test_runner.rb
-    ${CMAKE_SOURCE_DIR}/cmake_common/project.yml
-    ${test_src_absolute} ${test_name}_runner.c
-    DEPENDS ${test_src})
-  add_executable        (${test_name} ${test_src} ${test_name}_runner.c)
-  target_link_libraries (${test_name} unity)
-  target_link_libraries (${test_name} ${test_dep})
-  add_test              (${test_name} ${test_name})
+function(unity_add_test TEST_TARGET TEST_SRC TEST_DEP)
+  _unity_set_variables()
+
+  if(NOT EXISTS "${_UNITY_CONFIG}")
+    message(FATAL_ERROR "${_UNITY_CONFIG} does not exist!")
+  endif()
+
+  file(MAKE_DIRECTORY ${_UNITY_RUNNER_DIR})
+
+  get_filename_component( test_src_absolute ${TEST_SRC} REALPATH )
+  add_custom_command    (OUTPUT ${TEST_TARGET}_runner.c
+    COMMAND ruby ${_UNITY_RUNNER_GENERATOR}
+      ${_UNITY_CONFIG}
+      ${test_src_absolute} ${TEST_TARGET}_runner.c
+    DEPENDS
+      ${TEST_SRC}
+    WORKING_DIRECTORY
+      ${_UNITY_RUNNER_DIR}
+  )
+
+  add_executable        (${TEST_TARGET} ${TEST_SRC} ${_UNITY_RUNNER_DIR}/${TEST_TARGET}_runner.c)
+  target_link_libraries (${TEST_TARGET} unity)
+  target_link_libraries (${TEST_TARGET} ${TEST_DEP})
+  add_test              (${TEST_TARGET} ${TEST_TARGET})
 endfunction()
 
 # INTERNAL
@@ -26,12 +45,12 @@ endfunction()
 # arguments:
 #   MOCK_NAME   target name
 #   HEADER      used to generate the mock
-# requires: a file called cmock_config.yml on the tests directory
+# requires: a file called config.yml on the tests directory
 function(cmock_generate_mock MOCK_NAME HEADER)
   _cmock_set_variables()
 
-  if(NOT EXISTS "${_CMOCK_CWD}/cmock_config.yml")
-    message(FATAL_ERROR "${_CMOCK_CWD}/cmock_config.yml does not exist!")
+  if(NOT EXISTS "${_CMOCK_CWD}/config.yml")
+    message(FATAL_ERROR "${_CMOCK_CWD}/config.yml does not exist!")
   endif()
 
   file(MAKE_DIRECTORY ${_CMOCK_MOCK_DIR})
@@ -40,7 +59,7 @@ function(cmock_generate_mock MOCK_NAME HEADER)
     OUTPUT ${_CMOCK_MOCK_DIR}/${MOCK_NAME}.c
     COMMAND ruby
             ${_CMOCK_RUBY_SCRIPT}
-            -o${_CMOCK_CWD}/cmock_config.yml
+            -o${_CMOCK_CWD}/config.yml
             ${HEADER}
     WORKING_DIRECTORY ${_CMOCK_CWD}
     DEPENDS ${HEADER})
@@ -56,13 +75,12 @@ function(cmock_generate_mock MOCK_NAME HEADER)
 endfunction()
 
 # Creates a unity test linked with cmock generated mocks
-function(cmock_add_test TEST_NAME TEST_SRC TEST_DEP)
-  unity_add_test(${TEST_NAME} ${TEST_SRC} ${TEST_DEP})
+function(cmock_add_test TEST_TARGET TEST_SRC TEST_DEP CMOCK_DEP)
+  unity_add_test(${TEST_TARGET} ${TEST_SRC} ${TEST_DEP})
 
   _cmock_set_variables()
 
-  target_link_libraries(${TEST_NAME} cmock)
-  target_include_directories(${TEST_NAME} 
-    PRIVATE ${_CMOCK_MOCK_DIR}
-  )
+  target_link_libraries(${TEST_TARGET} cmock)
+  target_link_libraries (${TEST_TARGET} ${CMOCK_DEP})
+  # target_include_directories(${TEST_TARGET} PRIVATE ${_CMOCK_MOCK_DIR})
 endfunction()
