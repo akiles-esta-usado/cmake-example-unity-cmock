@@ -18,4 +18,5 @@
   :includes:        # This will add these includes to each mock.
     - <stdbool.h>
     - <stdint.h>
+    - <unity_internals.h>
   :treat_externs: :include  # Now the extern-ed functions will be mocked.
