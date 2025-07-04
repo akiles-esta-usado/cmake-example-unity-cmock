@@ -3,6 +3,9 @@
 #include <mock_divide.h>
 #include <unity.h>
 
+void setUp() {}
+void tearDown() {}
+
 void test_adding() {
   add_ExpectAndReturn(1, 2, 3);
 

@@ -11,5 +11,3 @@ add_subdirectory(src/divider)
 add_subdirectory(src/calculator)
 
 add_subdirectory(vendor)
-
-
